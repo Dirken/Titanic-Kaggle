@@ -7,11 +7,11 @@ setwd("C:/Users/Ricard/Downloads/titanic/titanic/csvs")
 train <- read.csv("parsed/train_clean.csv", stringsAsFactors = FALSE)
 test <- read.csv("parsed/test_clean.csv", stringsAsFactors = FALSE)
 
-train <- train[, -4]
-train <- train[, -4]
-train <- train[, -7]
-train <- train[, -8]
-train <- train[, -8]
+#train <- train[, c("PassengerId","Survived","Sex","Age","SibSp","Parch","Fare")]
+#train <- train[, c("PassengerId","Survived","Age","SibSp","Parch","Fare")]
+#train <- train[, c("PassengerId","Survived","SibSp","Parch")]
+#train <- train[, c("PassengerId","Survived","Fare")]
+
 
 train <- scale(train)
 
