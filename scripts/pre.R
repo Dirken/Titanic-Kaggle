@@ -1,3 +1,6 @@
+#######################################################################
+# Libraries                                                           #                                                                                                    
+#######################################################################
 library(plyr)
 library(foreign)
 library(ggplot2)
@@ -79,9 +82,17 @@ train$AgeGroup <- k$cluster
 k <- kmeans(test$Age, 7)
 test$AgeGroup <- k$cluster
 
+
+
+#######################################################################
+# Write                                                               #                                                                                                    
+#######################################################################
+# We write the results of the preprocessing in test_clean.csv and 
+# train_clean.csv, this csv's will be used in the following sections
+# where we will try to visualize and predict the data (script.r).
+
 train <- train[, c("Survived", "Pclass", "Name","Sex","Fare","AgeGroup","Embarked","FamilySize")]
 test <- test[, c("Survived", "Pclass", "Name","Sex","Fare","AgeGroup","Embarked","FamilySize")]
-
 write.csv(test, "parsed/test_clean.csv", row.names = FALSE)
 write.csv(train, "parsed/train_clean.csv", row.names = FALSE)
 
