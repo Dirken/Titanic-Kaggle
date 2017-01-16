@@ -2,8 +2,10 @@ library(plyr)
 library(foreign)
 library(ggplot2)
 
+#######################################################################
+# Read                                                                #                                                                                                    
+#######################################################################
 setwd("/home/dirken/Downloads/APA/titanic2/titanic/csvs/")
-
 train <- read.csv("originals/train.csv", stringsAsFactors = FALSE)
 test <- read.csv("originals/test.csv", stringsAsFactors = FALSE)
 
