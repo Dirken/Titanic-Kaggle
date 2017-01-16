@@ -1,3 +1,9 @@
+# Authors: Ricard Meyerhofer, Alejandro Martínez.
+# Even we did a documentation, we think it's important to comment what
+# we are doing in the code. So for clear conclusions document is probably
+# what will be more useful but here it can be seen the process and the 
+# decisions we took while doing this problem.
+
 #######################################################################
 # Libraries                                                           #                                                                                                    
 #######################################################################
@@ -12,6 +18,21 @@ library(ggplot2)
 # to use for analysis the data and a test one where we will try how our
 # predictions work. Data is split at a proportion of 2/3, 1/3.
 
+# Our dataset is the following:
+# Variable Name | Description
+# --------------|-------------
+# Survived      | Survived (1) or died (0)
+# Pclass        | Passenger's class
+# Name          | Passenger's name
+# Sex           | Passenger's sex
+# Age           | Passenger's age
+# SibSp         | Number of siblings/spouses aboard
+# Parch         | Number of parents/children aboard
+# Ticket        | Ticket number
+# Fare          | Fare
+# Cabin         | Cabin
+# Embarked      | Port of embarkation
+
 setwd("/home/dirken/Downloads/APA/titanic2/titanic/csvs/")
 train <- read.csv("originals/train.csv", stringsAsFactors = TRUE)
 test <- read.csv("originals/test.csv", stringsAsFactors = TRUE)
@@ -21,11 +42,13 @@ test <- read.csv("originals/test.csv", stringsAsFactors = TRUE)
 #######################################################################
 # To do a good prediction, we need to have a good data analysis where we
 # clean our data and see which variables will be more or less useful.
-# Also we have to think about how we will treat data with missing values.
+# Also we have to think about how we will treat data with missing values,
+# how they interact with each other, their relevance in the problem etc
 
-# We're quite lazy so we'll use a package that allows us to see missings
-# but first we need to substitute "" for NA
-train[train == ""] = "NA"
+# We will use a package that allows us to see missings # but first we 
+# need to substitute "" for NA
+
+train[train == ""] <- NA
 require(Amelia)
 missmap(train, main="Titanic Training Data - Missings Values", 
         col=c("blue", "white"), legend=TRUE)
@@ -34,9 +57,16 @@ missmap(train, main="Titanic Training Data - Missings Values",
 # - Cabin
 # - Age
 # - Embarked
-# As we can see, cabin has a lot of misses, age has some and embarked has few ones.
-# So it seems hard to have any prediction from cabin but so far we will not eliminate it.
+# As we can see, cabin has a lot of misses, age has some and embarked has few few ones.
+# So it seems hard to have any prediction from cabin but so far, we will not eliminate it.
 
+#
+
+#######################################################################
+# Cleaning data                                                       #                                                                                                    
+#######################################################################
+
+# We decided to do the following:
 
 #train$Sex <- factor(train$Sex)
 #train$Survived <- factor(train$Survived)
