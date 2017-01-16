@@ -5,9 +5,21 @@ library(ggplot2)
 #######################################################################
 # Read                                                                #                                                                                                    
 #######################################################################
+# We read the data. Data is split in two, a train model that we're going
+# to use for analysis the data and a test one where we will try how our
+# predictions work. Data is split at a proportion of 2/3, 1/3.
+
 setwd("/home/dirken/Downloads/APA/titanic2/titanic/csvs/")
 train <- read.csv("originals/train.csv", stringsAsFactors = FALSE)
 test <- read.csv("originals/test.csv", stringsAsFactors = FALSE)
+
+#######################################################################
+# Data Analysis                                                       #                                                                                                    
+#######################################################################
+# To do a good prediction, we need to have a good data analysis where we
+# clean our data and see which variables will be more or less useful.
+# Also we have to think about how we will treat data with missing values.
+
 
 #train$Sex <- factor(train$Sex)
 #train$Survived <- factor(train$Survived)
