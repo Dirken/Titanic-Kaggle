@@ -13,8 +13,8 @@ library(ggplot2)
 # predictions work. Data is split at a proportion of 2/3, 1/3.
 
 setwd("/home/dirken/Downloads/APA/titanic2/titanic/csvs/")
-train <- read.csv("originals/train.csv", stringsAsFactors = FALSE)
-test <- read.csv("originals/test.csv", stringsAsFactors = FALSE)
+train <- read.csv("originals/train.csv", stringsAsFactors = TRUE)
+test <- read.csv("originals/test.csv", stringsAsFactors = TRUE)
 
 #######################################################################
 # Data Analysis                                                       #                                                                                                    
@@ -23,7 +23,13 @@ test <- read.csv("originals/test.csv", stringsAsFactors = FALSE)
 # clean our data and see which variables will be more or less useful.
 # Also we have to think about how we will treat data with missing values.
 
-
+# We're quite lazy so we'll use a package that allows us to see missings
+# but first we need to substitute "" for NA
+train[train== ""] = "NA"
+missing.types <- c("NA", "")
+require(Amelia)
+missmap(train, main="Titanic Training Data - Missings Values", 
+        col=c("blue", "white"), legend=TRUE)
 #train$Sex <- factor(train$Sex)
 #train$Survived <- factor(train$Survived)
 #train$Pclass <- factor(train$Pclass)
