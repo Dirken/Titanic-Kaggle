@@ -1,49 +1,72 @@
 library(plyr)
 library(foreign)
+library(ggplot2)
 
-
-setwd("C:/Users/Ricard/Downloads/titanic/titanic/csvs")
+setwd("/home/dirken/Downloads/APA/titanic2/titanic/csvs/")
 
 train <- read.csv("originals/train.csv", stringsAsFactors = FALSE)
 test <- read.csv("originals/test.csv", stringsAsFactors = FALSE)
 
-#Is not usefull to factor this variable if i want to replace it later...
 #train$Sex <- factor(train$Sex)
-train$Survived <- factor(train$Survived)
-train$Pclass <- factor(train$Pclass)
+#train$Survived <- factor(train$Survived)
+#train$Pclass <- factor(train$Pclass)
 
-Age.mod.train <- lm(Age ~ Pclass + Sex + SibSp + Parch + Fare, data = train)
-Fare.mod.train <- lm(Fare ~ Pclass + Sex + SibSp + Parch + Age, data = train)
+full <- join(test, train, type = "full")
 
-Age.mod.test <- lm(Age ~ Pclass + Sex + SibSp + Parch + Fare, data = test)
-Fare.mod.test <- lm(Fare ~ Pclass + Sex + SibSp + Parch + Age, data = test)
+test$Survived <- 0
+
+Age.mod <- lm(Age ~ Pclass + Sex + SibSp + Parch + Fare, data = full)
+Fare.mod <- lm(Fare ~ Pclass + Sex + SibSp + Parch + Age, data = full)
 
 #Afegim les prediccions de edat i passatge a les variables que no en tenen:
-train$Age[is.na(train$Age)] <- predict(Age.mod.train, train)[is.na(train$Age)]
-train$Fare[is.na(train$Fare)] <- predict(Fare.mod.train, train)[is.na(train$Fare)]
+train$Age[is.na(train$Age)] <- predict(Age.mod, train)[is.na(train$Age)]
+train$Fare[is.na(train$Fare)] <- predict(Fare.mod, train)[is.na(train$Fare)]
 
-test$Age[is.na(test$Age)] <- predict(Age.mod.test, test)[is.na(test$Age)]
-test$Fare[is.na(test$Fare)] <- predict(Fare.mod.test, test)[is.na(test$Fare)]
-
-#We change sex to a numeric value where male is 1 and female 0
-train$Sex[train$Sex == "male"] <- 1
-train$Sex[train$Sex == "female"] <- 0
-
-#We change sex to a numeric value where male is 1 and female 0
-test$Sex[test$Sex == "male"] <- 1
-test$Sex[test$Sex == "female"] <- 0
+test$Age[is.na(test$Age)] <- predict(Age.mod, test)[is.na(test$Age)]
+test$Fare[is.na(test$Fare)] <- predict(Fare.mod, test)[is.na(test$Fare)]
 
 #comptem el nombre d aparicions de cada lletra
-length(which(train$Embarked == "S"))
-length(which(train$Embarked == "C"))
-length(which(train$Embarked == "Q"))
+length(which(full$Embarked == "S"))
+length(which(full$Embarked == "C"))
+length(which(full$Embarked == "Q"))
 
 #afegim la S ja que es la mes comuna
 train$Embarked[train$Embarked == ""] <- "S"
-train$Embarked <- factor(train$Embarked)
 
-#length(which(train$Age <= 0))
-#train$Age[train$Age < 0] <- predict(Age.mod.train, train)
+train$Embarked[train$Embarked == "C"] <- 0
+train$Embarked[train$Embarked == "S"] <- 1
+train$Embarked[train$Embarked == "Q"] <- 2
+
+test$Embarked[test$Embarked == "C"] <- 0
+test$Embarked[test$Embarked == "S"] <- 1
+test$Embarked[test$Embarked == "Q"] <- 2
+
+
+#survived yes/no
+# train$Survived[train$Survived == 0] <- "N"
+# train$Survived[train$Survived == 1] <- "Y"
+
+#male female
+train$Sex[train$Sex == "male"] <- 0
+train$Sex[train$Sex == "female"] <- 1
+
+# creem la variable family size per agrupar els SibSp i Parch
+train$FamilySize <- train$SibSp + train$Parch + 1
+test$FamilySize <- test$SibSp + test$Parch + 1
+
+train$Age[train$Age < 0] <- 0
+test$Age[test$Age < 0] <- 0
+
+
+## agrupem per edats, el millor valor que hem trobat es 7 clusters
+k <- kmeans(train$Age, 7)
+train$AgeGroup <- k$cluster
+
+k <- kmeans(test$Age, 7)
+test$AgeGroup <- k$cluster
+
+train <- train[, c("Survived", "Pclass", "Name","Sex","Fare","AgeGroup","Embarked","FamilySize")]
+test <- test[, c("Survived", "Pclass", "Name","Sex","Fare","AgeGroup","Embarked","FamilySize")]
 
 write.csv(test, "parsed/test_clean.csv", row.names = FALSE)
 write.csv(train, "parsed/train_clean.csv", row.names = FALSE)
