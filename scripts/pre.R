@@ -25,14 +25,24 @@ test <- read.csv("originals/test.csv", stringsAsFactors = TRUE)
 
 # We're quite lazy so we'll use a package that allows us to see missings
 # but first we need to substitute "" for NA
-train[train== ""] = "NA"
-missing.types <- c("NA", "")
+train[train == ""] = "NA"
 require(Amelia)
 missmap(train, main="Titanic Training Data - Missings Values", 
         col=c("blue", "white"), legend=TRUE)
+
+#So far we can see that we have missings at 3 variables:
+# - Cabin
+# - Age
+# - Embarked
+# As we can see, cabin has a lot of misses, age has some and embarked has few ones.
+# So it seems hard to have any prediction from cabin but so far we will not eliminate it.
+
+
 #train$Sex <- factor(train$Sex)
 #train$Survived <- factor(train$Survived)
 #train$Pclass <- factor(train$Pclass)
+
+
 
 full <- join(test, train, type = "full")
 
