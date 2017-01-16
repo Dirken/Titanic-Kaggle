@@ -60,7 +60,11 @@ missmap(train, main="Titanic Training Data - Missings Values",
 # As we can see, cabin has a lot of misses, age has some and embarked has few few ones.
 # So it seems hard to have any prediction from cabin but so far, we will not eliminate it.
 
-#
+
+# If we see the variable Name we mainly have the following structure
+# FamilyName, Title. Name Surname. So we can get useful information:
+train$Title <- gsub('(.*, )|(\\..*)', '', train$Name)
+train$Family <- sub('\\s*,.*','', train$Name)
 
 #######################################################################
 # Cleaning data                                                       #                                                                                                    
@@ -127,8 +131,6 @@ train$AgeGroup <- k$cluster
 
 k <- kmeans(test$Age, 7)
 test$AgeGroup <- k$cluster
-
-
 
 #######################################################################
 # Write                                                               #                                                                                                    
