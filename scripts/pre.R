@@ -60,15 +60,44 @@ missmap(train, main="Titanic Training Data - Missings Values",
 # As we can see, cabin has a lot of misses, age has some and embarked has few few ones.
 # So it seems hard to have any prediction from cabin but so far, we will not eliminate it.
 
+# Now we proceed to see relationship between variables that we have (
+# so at this way we will understand better our data)
+barplot(table(train$Survived), names.arg = c("Perished", "Survived"),
+     main="Passenger Fate distribution", col="blue")
+
+barplot(table(train$Pclass),  main="Pclass distribution", col="Blue")
+
+barplot(table(train$Sex), main="Sex distribution", col="blue")
+
+barplot(table(train$SibSp), main="SibSp distribution",col="blue")
+
+barplot(table(train$Parch), main="Parch distribution", col="blue")
+
+barplot(table(train$Embarked), names.arg = c("NA","Cherbourg", "Queenstown", "Southampton"),
+        main="Embarked place", col="blue")
+
+hist(train$Age, main="Age distribution", col="blue")
+
+hist(train$Fare, main="Fare (fee paid for ticket[s])", col="blue")
+
+#######################################################################
+# Cleaning data                                                       #                                                                                                    
+#######################################################################
 
 # If we see the variable Name we mainly have the following structure
 # FamilyName, Title. Name Surname. So we can get useful information:
 train$Title <- gsub('(.*, )|(\\..*)', '', train$Name)
 train$Family <- sub('\\s*,.*','', train$Name)
 
+# if we pay attention to train$Title, we can see that can help us to get 
+# the age of some of the missings. So if we take a look to the honorifics 
+# we can try to fullfil some of the NA values that we have.
+table(train$Title)
+
 #######################################################################
-# Cleaning data                                                       #                                                                                                    
+# Imputations                                                         #                                                                                                    
 #######################################################################
+
 
 # We decided to do the following:
 
