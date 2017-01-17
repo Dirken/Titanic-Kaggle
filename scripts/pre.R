@@ -1,4 +1,5 @@
 # Authors: Ricard Meyerhofer, Alejandro Martínez.
+# Subject: Machine Learning, Universitat Politècnica de Catalunya, 2016-2017Q2.
 # Even we did a documentation, we think it's important to comment what
 # we are doing in the code. So for clear conclusions document is probably
 # what will be more useful but here it can be seen the process and the 
@@ -80,6 +81,26 @@ hist(train$Age, main="Age distribution", col="blue")
 
 hist(train$Fare, main="Fare (fee paid for ticket[s])", col="blue")
 
+# So as we can see there were way more males than females, more people perished than died
+# and there is in 3rd class as many people as in first and second. Also more people embarked in 
+# Southampton more than anywhere else and the average age of our training set is about 20-40.
+
+#Age is a determinant factor? Seems not to be in adults
+boxplot(train$Age ~ train$Survived, main="Passenger Fate by Age", 
+        xlab="Sex", ylab="Survived")
+
+barplot(table(train$Survived,train$Age), main="Passenger Fate by Age", 
+        xlab="Sex", ylab="Survived",legend=TRUE)
+
+#Embarking place is a determinant factor?
+table(train$Survived,train$Embarked)
+barplot(table(train$Survived,train$Embarked), main="Passenger Fate by Embarking place", 
+        xlab="Embarked", ylab="Survived")
+
+#Fare is determinant factor? We have to do more analysis
+boxplot( train$Fare~ train$Survived , main="Passenger Fate by Fare price", 
+        xlab="Survived", ylab="Fare price", legend=TRUE)
+
 #######################################################################
 # Cleaning data                                                       #                                                                                                    
 #######################################################################
@@ -97,7 +118,6 @@ table(train$Title)
 #######################################################################
 # Imputations                                                         #                                                                                                    
 #######################################################################
-
 
 # We decided to do the following:
 
