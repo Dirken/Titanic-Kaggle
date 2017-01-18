@@ -101,36 +101,65 @@ barplot(table(train$Survived,train$Embarked), main="Passenger Fate by Embarking 
 boxplot( train$Fare~ train$Survived , main="Passenger Fate by Fare price", 
         xlab="Survived", ylab="Fare price", legend=TRUE)
 
+
+#Comentar una mica per què el volem
+require(corrgram)
+corrgram.data <- train
+## change features of factor type to numeric type for inclusion on correlogram
+corrgram.data$Survived <- as.numeric(corrgram.data$Survived)
+corrgram.data$Pclass <- as.numeric(corrgram.data$Pclass)
+corrgram.data$Embarked <- revalue(corrgram.data$Embarked, 
+                                  c("C" = 1, "Q" = 2, "S" = 3))
+## generate correlogram
+corrgram.vars <- c("Survived", "Pclass", "Sex", "Age", 
+                   "SibSp", "Parch", "Fare", "Embarked")
+corrgram(corrgram.data[,corrgram.vars], order=FALSE, 
+         lower.panel=panel.ellipse, upper.panel=panel.pie, 
+         text.panel=panel.txt, main="Titanic Training Data")
+
+#Comentar una mica les conclusions que se'n puguin treure.
+
 #######################################################################
-# Cleaning data                                                       #                                                                                                    
+# Cleaning data && new variable s                                     #                                                                                                    
 #######################################################################
 
 # If we see the variable Name we mainly have the following structure
 # FamilyName, Title. Name Surname. So we can get useful information:
 train$Title <- gsub('(.*, )|(\\..*)', '', train$Name)
+test$Title <- gsub('(.*, )|(\\..*)', '', test$Name)
+
 train$Family <- sub('\\s*,.*','', train$Name)
+test$Family <- sub('\\s*,.*','', test$Name)
 
 # if we pay attention to train$Title, we can see that can help us to get 
 # the age of some of the missings. So if we take a look to the honorifics 
-# we can try to fullfil some of the NA values that we have.
+# we can try to fullfil the NA values that we have.
 table(train$Title)
+
+#WARNING
+# idk if it's useful or not
+train$FamilySize <- train$SibSp + train$Parch + 1
+test$FamilySize <- test$SibSp + test$Parch + 1
+
 
 #######################################################################
 # Imputations                                                         #                                                                                                    
 #######################################################################
 
+# age should be imputated acording to their social class
+# missing the embarkation què fem?
+
+#######################################################################
+# Done until now                                                      #                                                                                                    
+#######################################################################
 # We decided to do the following:
 
 #train$Sex <- factor(train$Sex)
 #train$Survived <- factor(train$Survived)
 #train$Pclass <- factor(train$Pclass)
 
-
-
 full <- join(test, train, type = "full")
-
 test$Survived <- 0
-
 Age.mod <- lm(Age ~ Pclass + Sex + SibSp + Parch + Fare, data = full)
 Fare.mod <- lm(Fare ~ Pclass + Sex + SibSp + Parch + Age, data = full)
 
@@ -140,38 +169,6 @@ train$Fare[is.na(train$Fare)] <- predict(Fare.mod, train)[is.na(train$Fare)]
 
 test$Age[is.na(test$Age)] <- predict(Age.mod, test)[is.na(test$Age)]
 test$Fare[is.na(test$Fare)] <- predict(Fare.mod, test)[is.na(test$Fare)]
-
-#comptem el nombre d aparicions de cada lletra
-length(which(full$Embarked == "S"))
-length(which(full$Embarked == "C"))
-length(which(full$Embarked == "Q"))
-
-#afegim la S ja que es la mes comuna
-train$Embarked[train$Embarked == ""] <- "S"
-
-train$Embarked[train$Embarked == "C"] <- 0
-train$Embarked[train$Embarked == "S"] <- 1
-train$Embarked[train$Embarked == "Q"] <- 2
-
-test$Embarked[test$Embarked == "C"] <- 0
-test$Embarked[test$Embarked == "S"] <- 1
-test$Embarked[test$Embarked == "Q"] <- 2
-
-
-#survived yes/no
-# train$Survived[train$Survived == 0] <- "N"
-# train$Survived[train$Survived == 1] <- "Y"
-
-#male female
-train$Sex[train$Sex == "male"] <- 0
-train$Sex[train$Sex == "female"] <- 1
-
-# creem la variable family size per agrupar els SibSp i Parch
-train$FamilySize <- train$SibSp + train$Parch + 1
-test$FamilySize <- test$SibSp + test$Parch + 1
-
-train$Age[train$Age < 0] <- 0
-test$Age[test$Age < 0] <- 0
 
 
 ## agrupem per edats, el millor valor que hem trobat es 7 clusters
