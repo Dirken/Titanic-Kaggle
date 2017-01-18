@@ -46,6 +46,10 @@ test <- read.csv("originals/test.csv", stringsAsFactors = TRUE)
 # Also we have to think about how we will treat data with missing values,
 # how they interact with each other, their relevance in the problem etc
 
+#Our train dataset contains the following:
+train2 <- train
+summary(train2)
+
 # We will use a package that allows us to see missings # but first we 
 # need to substitute "" for NA
 
@@ -64,7 +68,7 @@ missmap(train, main="Titanic Training Data - Missings Values",
 # Now we proceed to see relationship between variables that we have (
 # so at this way we will understand better our data)
 barplot(table(train$Survived), names.arg = c("Perished", "Survived"),
-     main="Passenger Fate distribution", col="blue")
+        main="Passenger Fate distribution", col="blue")
 
 barplot(table(train$Pclass),  main="Pclass distribution", col="Blue")
 
@@ -79,7 +83,12 @@ barplot(table(train$Embarked), names.arg = c("NA","Cherbourg", "Queenstown", "So
 
 hist(train$Age, main="Age distribution", col="blue")
 
-hist(train$Fare, main="Fare (fee paid for ticket[s])", col="blue")
+hist(train$Fare, main="Fare price", col="blue")
+
+# as we could see in the histogram, we have some fare values 
+# to 0 which should be treated and there are some prices that are extremely expensive
+# that could be ones that have been bought in groups
+summary(train$Fare)
 
 # So as we can see there were way more males than females, more people perished than died
 # and there is in 3rd class as many people as in first and second. Also more people embarked in 
@@ -99,8 +108,7 @@ barplot(table(train$Survived,train$Embarked), main="Passenger Fate by Embarking 
 
 #Fare is determinant factor? We have to do more analysis
 boxplot( train$Fare~ train$Survived , main="Passenger Fate by Fare price", 
-        xlab="Survived", ylab="Fare price", legend=TRUE)
-
+         xlab="Survived", ylab="Fare price", legend=TRUE)
 
 #Comentar una mica per què el volem
 require(corrgram)
@@ -133,54 +141,36 @@ test$Family <- sub('\\s*,.*','', test$Name)
 
 # if we pay attention to train$Title, we can see that can help us to get 
 # the age of some of the missings. So if we take a look to the honorifics 
-# we can try to fullfil the NA values that we have.
+# we can try to fullfil (better than just doing the average of all our data) 
+# the NA values that we have.
 table(train$Title)
 
-#WARNING
+# titles related with missings,
+require(Hmisc)
+bystats(train$Age, train$Title, fun=function(x)c(Mean=mean(x),Median=median(x)))
+
 # idk if it's useful or not
 train$FamilySize <- train$SibSp + train$Parch + 1
 test$FamilySize <- test$SibSp + test$Parch + 1
-
 
 #######################################################################
 # Imputations                                                         #                                                                                                    
 #######################################################################
 
 # age should be imputated acording to their social class
-# missing the embarkation què fem?
+#train$Age.....
 
-#######################################################################
-# Done until now                                                      #                                                                                                    
-#######################################################################
-# We decided to do the following:
-
-#train$Sex <- factor(train$Sex)
-#train$Survived <- factor(train$Survived)
-#train$Pclass <- factor(train$Pclass)
-
-full <- join(test, train, type = "full")
-test$Survived <- 0
-Age.mod <- lm(Age ~ Pclass + Sex + SibSp + Parch + Fare, data = full)
-Fare.mod <- lm(Fare ~ Pclass + Sex + SibSp + Parch + Age, data = full)
-
-#Afegim les prediccions de edat i passatge a les variables que no en tenen:
-train$Age[is.na(train$Age)] <- predict(Age.mod, train)[is.na(train$Age)]
-train$Fare[is.na(train$Fare)] <- predict(Fare.mod, train)[is.na(train$Fare)]
-
-test$Age[is.na(test$Age)] <- predict(Age.mod, test)[is.na(test$Age)]
-test$Fare[is.na(test$Fare)] <- predict(Fare.mod, test)[is.na(test$Fare)]
-
-
-## agrupem per edats, el millor valor que hem trobat es 7 clusters
-k <- kmeans(train$Age, 7)
-train$AgeGroup <- k$cluster
-
-k <- kmeans(test$Age, 7)
-test$AgeGroup <- k$cluster
+# missing the embarkation is quite sure that that person will be from Southampton (by probability)
+train$Embarked[which(is.na(train$Embarked))] <- 'S'
 
 #######################################################################
 # Write                                                               #                                                                                                    
 #######################################################################
+
+# Before writing it, let's compare it with the one we had at first 
+summary(train2)
+summary(train)
+
 # We write the results of the preprocessing in test_clean.csv and 
 # train_clean.csv, this csv's will be used in the following sections
 # where we will try to visualize and predict the data (script.r).
