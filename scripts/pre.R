@@ -110,22 +110,18 @@ barplot(table(train$Survived,train$Embarked), main="Passenger Fate by Embarking 
 boxplot( train$Fare~ train$Survived , main="Passenger Fate by Fare price", 
          xlab="Survived", ylab="Fare price", legend=TRUE)
 
-#Comentar una mica per què el volem
+#Relationship of all variables
 require(corrgram)
 corrgram.data <- train
-## change features of factor type to numeric type for inclusion on correlogram
 corrgram.data$Survived <- as.numeric(corrgram.data$Survived)
 corrgram.data$Pclass <- as.numeric(corrgram.data$Pclass)
 corrgram.data$Embarked <- revalue(corrgram.data$Embarked, 
                                   c("C" = 1, "Q" = 2, "S" = 3))
 ## generate correlogram
-corrgram.vars <- c("Survived", "Pclass", "Sex", "Age", 
-                   "SibSp", "Parch", "Fare", "Embarked")
+corrgram.vars <- c("Survived", "Pclass", "Sex", "Age","SibSp", "Parch", "Fare", "Embarked")
 corrgram(corrgram.data[,corrgram.vars], order=FALSE, 
          lower.panel=panel.ellipse, upper.panel=panel.pie, 
-         text.panel=panel.txt, main="Titanic Training Data")
-
-#Comentar una mica les conclusions que se'n puguin treure.
+         text.panel=panel.txt, main="Training Data")
 
 #######################################################################
 # Cleaning data && new variable s                                     #                                                                                                    
@@ -145,9 +141,68 @@ test$Family <- sub('\\s*,.*','', test$Name)
 # the NA values that we have.
 table(train$Title)
 
-# titles related with missings,
-require(Hmisc)
-bystats(train$Age, train$Title, fun=function(x)c(Mean=mean(x),Median=median(x)))
+#all titles we have
+unique(train$Title)
+
+#We decided to organize them taking into account wikipedias article about english honorifics:
+# https://en.wikipedia.org/wiki/English_honorifics and some googling.
+
+#Mr
+length(which(train$Title == "Mr"))
+
+#Miss
+length(which(train$Title == "Mrs"))
+length(which(train$Title == "Miss"))
+length(which(train$Title == "Ms"))
+length(which(train$Title == "Mlle")) #mademoiselle
+length(which(train$Title == "Mme")) #madame
+
+# Nobelty, not all of them are but it's difficult to distinguish between a Reve
+# and a Col than a certain real nobel.. (it's variable, would )
+length(which(train$Title == "Master"))
+
+length(which(train$Title == "Dr"))
+length(which(train$Title == "Rev"))
+length(which(train$Title == "Don"))
+length(which(train$Title == "Sir"))
+length(which(train$Title == "Capt"))
+length(which(train$Title == "Jonkheer")) #dutch nobelty
+length(which(train$Title == "Col"))
+length(which(train$Title == "Major"))
+
+length(which(train$Title == "Lady"))
+length(which(train$Title == "the Countess"))
+
+
+train$Title[train$Title == "Mrs" || train$Title == "Ms" || train$Title == "Mlle" ] <- "Miss"
+#let's see if it can be worth to consider kid - man - woman in nobelty:
+table(train$Survived, train$Title)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Mr:
+# Mrs:
+# Miss:
+# Master:
+
+
+
+
+
+
+
+#Titles that have missings:
+unique(train$Title[is.na(train$Age)])
 
 # idk if it's useful or not
 train$FamilySize <- train$SibSp + train$Parch + 1
