@@ -256,7 +256,10 @@ test$Fare[is.na(test$Fare)] <- predict(Fare.mod, test)[is.na(test$Fare)]
 
 
 # missing the embarkation is quite sure that that person will be from Southampton (by probability)
-train$Embarked[which(is.na(train$Embarked))] <- 'S'
+prop.table(table(train$Pclass, train$Embarked),2)
+train$Pclass[is.na(train$Embarked)] 
+#but our passengers are first class so... we put a C
+train$Embarked[which(is.na(train$Embarked))] <- 'C'
 
 #We group by age, best group is with 7 clusters
 k <- kmeans(train$Age, 7)
