@@ -7,6 +7,11 @@ setwd("/home/dirken/Downloads/APA/titanic2/titanic/csvs/")
 test <- read.csv("parsed/test_clean.csv", stringsAsFactors = FALSE)
 train <- read.csv("parsed/train_clean.csv", stringsAsFactors = FALSE)
 
+
+###############################################
+## Naive Bayes
+###############################################
+
 ###############################################
 ## Nearest Neightbours
 ###############################################
