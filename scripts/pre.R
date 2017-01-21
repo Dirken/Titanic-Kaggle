@@ -147,10 +147,6 @@ unique(train$Title)
 #Titles that have missings:
 unique(train$Title[is.na(train$Age)])
 
-# So we will now imputate for each Title with the average of it's own class 
-# (except in the case of Dr because few data)
-
-
 #We decided to organize them taking into account wikipedias article about english honorifics:
 # https://en.wikipedia.org/wiki/English_honorifics and some googling.
 
@@ -180,36 +176,94 @@ length(which(train$Title == "Major"))
 length(which(train$Title == "Lady"))
 length(which(train$Title == "the Countess"))
 
-
-train[train$Title == "Mrs" || train$Title == "Ms" || train$Title == "Mlle" || train$Title == "Mme" ] <- "Miss"
-#let's see if it can be worth to consider kid - man - woman in nobelty:
+#let's see if it can be worth to consider Master - Adult in nobelty:
 train2$Title <- factor(train$Title, c("Capt","Col","Major","Sir","Lady","Rev",
                                      "Dr","Don","Jonkheer","the Countess","Master"))
+
 # it can be seen that the average age except in master and capt could be the same for all groups 
 # (we have few data...), so it's hard to really know.
 boxplot(train$Age ~ train2$Title, main="Passenger Age by Title", xlab="Title", ylab="Age")
 
 #Global mean of everyone
 summary(train$Survived)
+
 #Mean of Master
 trainaux <- (train$Survived[train$Title == "Master"])
 summary(trainaux)
-#Mean of the nobelty group except Master group
 
+#Transformations of same classes
+train$Title[train$Title == "Mrs"] <- "Miss"
+train$Title[train$Title == "Ms"] <- "Miss"
+train$Title[train$Title == "Mlle"] <- "Miss"
+train$Title[train$Title == "Mme"] <- "Miss"
+#We do also on test
+test$Title[test$Title == "Mrs"] <- "Miss"
+test$Title[test$Title == "Ms"] <- "Miss"
+test$Title[test$Title == "Mlle"] <- "Miss"
+test$Title[test$Title == "Mme"] <- "Miss"
+
+train$Title[train$Title == "Dr"] <- "Nobelty"
+train$Title[train$Title == "Rev"] <- "Nobelty"
+train$Title[train$Title == "Don"] <- "Nobelty"
+train$Title[train$Title == "Dona"] <- "Nobelty"
+train$Title[train$Title == "Sir"] <- "Nobelty"
+train$Title[train$Title == "Capt"] <- "Nobelty"
+train$Title[train$Title == "Jonkheer"] <- "Nobelty"
+train$Title[train$Title == "Col"] <- "Nobelty"
+train$Title[train$Title == "Major"] <- "Nobelty"
+train$Title[train$Title == "Lady"] <- "Nobelty"
+train$Title[train$Title == "the Countess"] <- "Nobelty"
+#Also on test
+test$Title[test$Title == "Dr"] <- "Nobelty"
+test$Title[test$Title == "Rev"] <- "Nobelty"
+test$Title[test$Title == "Don"] <- "Nobelty"
+test$Title[test$Title == "Dona"] <- "Nobelty"
+test$Title[test$Title == "Sir"] <- "Nobelty"
+test$Title[test$Title == "Capt"] <- "Nobelty"
+test$Title[test$Title == "Jonkheer"] <- "Nobelty"
+test$Title[test$Title == "Col"] <- "Nobelty"
+test$Title[test$Title == "Major"] <- "Nobelty"
+test$Title[test$Title == "Lady"] <- "Nobelty"
+test$Title[test$Title == "the Countess"] <- "Nobelty"
+
+
+trainaux <- (train$Survived[train$Title == "Nobelty"])
+summary(trainaux)
+#So it's not a good idea to mix them Master with our Nobelty group.
+
+#We create a new variable family size
 train$FamilySize <- train$SibSp + train$Parch + 1
 test$FamilySize <- test$SibSp + test$Parch + 1
+
 
 #######################################################################
 # Imputations                                                         #                                                                                                    
 #######################################################################
 
-# age should be imputated according to their social class
-#train$Age.....
+#Let's now imputate the missing ages of each group!
+unique(train$Title[is.na(train$Age)])
+
+Age.mod <- lm(Age ~ Pclass + Sex + SibSp + Parch + Fare + Title , data = train)
+Fare.mod <- lm(Fare ~ Pclass + Sex + SibSp + Parch + Age +Title, data = train)
+
+
+#Afegim les prediccions de edat i passatge a les variables que no en tenen:
+train$Age[is.na(train$Age)] <- predict(Age.mod, train)[is.na(train$Age)]
+#fare we should make a bit more of research about it...
+train$Fare[is.na(train$Fare)] <- predict(Fare.mod, train)[is.na(train$Fare)]
+test$Age[is.na(test$Age)] <- predict(Age.mod, test)[is.na(test$Age)]
+test$Fare[is.na(test$Fare)] <- predict(Fare.mod, test)[is.na(test$Fare)]
 
 
 # missing the embarkation is quite sure that that person will be from Southampton (by probability)
 train$Embarked[which(is.na(train$Embarked))] <- 'S'
 
+#We group by age, best group is with 7 clusters
+k <- kmeans(train$Age, 7)
+train$AgeGroup <- k$cluster
+
+k <- kmeans(test$Age, 7)
+test$AgeGroup <- k$cluster
 #######################################################################
 # Write                                                               #                                                                                                    
 #######################################################################
@@ -222,8 +276,8 @@ summary(train)
 # train_clean.csv, this csv's will be used in the following sections
 # where we will try to visualize and predict the data (script.r).
 
-train <- train[, c("Survived", "Pclass", "Name","Sex","Fare","AgeGroup","Embarked","FamilySize")]
-test <- test[, c("Survived", "Pclass", "Name","Sex","Fare","AgeGroup","Embarked","FamilySize")]
+train <- train[, c("Survived", "Pclass", "Name","Sex","Fare","AgeGroup","Embarked","FamilySize","Title","FamilySize")]
+test <- test[, c("Survived", "Pclass", "Name","Sex","Fare","AgeGroup","Embarked","FamilySize","Title","FamilySize")]
 write.csv(test, "parsed/test_clean.csv", row.names = FALSE)
 write.csv(train, "parsed/train_clean.csv", row.names = FALSE)
 
