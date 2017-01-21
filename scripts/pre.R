@@ -144,6 +144,13 @@ table(train$Title)
 #all titles we have
 unique(train$Title)
 
+#Titles that have missings:
+unique(train$Title[is.na(train$Age)])
+
+# So we will now imputate for each Title with the average of it's own class 
+# (except in the case of Dr because few data)
+
+
 #We decided to organize them taking into account wikipedias article about english honorifics:
 # https://en.wikipedia.org/wiki/English_honorifics and some googling.
 
@@ -174,37 +181,21 @@ length(which(train$Title == "Lady"))
 length(which(train$Title == "the Countess"))
 
 
-train$Title[train$Title == "Mrs" || train$Title == "Ms" || train$Title == "Mlle" ] <- "Miss"
+train[train$Title == "Mrs" || train$Title == "Ms" || train$Title == "Mlle" || train$Title == "Mme" ] <- "Miss"
 #let's see if it can be worth to consider kid - man - woman in nobelty:
-table(train$Survived, train$Title)
+train2$Title <- factor(train$Title, c("Capt","Col","Major","Sir","Lady","Rev",
+                                     "Dr","Don","Jonkheer","the Countess","Master"))
+# it can be seen that the average age except in master and capt could be the same for all groups 
+# (we have few data...), so it's hard to really know.
+boxplot(train$Age ~ train2$Title, main="Passenger Age by Title", xlab="Title", ylab="Age")
 
+#Global mean of everyone
+summary(train$Survived)
+#Mean of Master
+trainaux <- (train$Survived[train$Title == "Master"])
+summary(trainaux)
+#Mean of the nobelty group except Master group
 
-
-
-
-
-
-
-
-
-
-
-
-# Mr:
-# Mrs:
-# Miss:
-# Master:
-
-
-
-
-
-
-
-#Titles that have missings:
-unique(train$Title[is.na(train$Age)])
-
-# idk if it's useful or not
 train$FamilySize <- train$SibSp + train$Parch + 1
 test$FamilySize <- test$SibSp + test$Parch + 1
 
@@ -212,8 +203,9 @@ test$FamilySize <- test$SibSp + test$Parch + 1
 # Imputations                                                         #                                                                                                    
 #######################################################################
 
-# age should be imputated acording to their social class
+# age should be imputated according to their social class
 #train$Age.....
+
 
 # missing the embarkation is quite sure that that person will be from Southampton (by probability)
 train$Embarked[which(is.na(train$Embarked))] <- 'S'
