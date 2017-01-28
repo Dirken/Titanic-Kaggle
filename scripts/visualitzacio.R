@@ -6,31 +6,21 @@ library(class)
 
 #### LECTURA FITXERS #####
 
-setwd("/home/dirken/Downloads/APA/titanic2/titanic/csvs/")
+#setwd("/home/dirken/Downloads/APA/titanic2/titanic/csvs/")
+setwd("D:/Usuarios/alex2132/Escritorio/Titanic-Kaggle-master/Titanic-Kaggle-master/csvs")
 
-test <- read.csv("parsed/test_clean.csv", stringsAsFactors = FALSE)
-train <- read.csv("parsed/train_clean.csv", stringsAsFactors = FALSE)
 
-train.data <- train[, c("Sex", "AgeGroup", "Fare", "Pclass", "Embarked", "FamilySize")]
+test <- read.csv("parsed/test_clean.csv", stringsAsFactors = TRUE)
+train <- read.csv("parsed/train_clean.csv", stringsAsFactors = TRUE)
+
+train.data <- train[, c("Sex", "AgeGroup", "Fare", "Pclass", "Embarked", "FamilySize", "Title")]
 Survived.class <- factor(paste(train$Survived, sep=""))
 
-#### PRIMERA APROXIMACIO A LES DADES ####
-
-## mostra el index de supervivencia respecte la classe on s'allotjava cada passatger.
-table(train$Survived, train$Sex)
-prop.table(table(train$Survived, train$Sex),2)
-
-# table(train$Survived, train$Sex, train$Pclass)
-# prop.table(table(train$Survived, train$Sex, train$Pclass),2)
-
-
-## indica la classe on estava cada passatger respecte el port on va embarcar
-## es veu una interessant relacio, ja que a Cherbourg, la meitat de passatgers
-## que van embarcar van ser de 1ra classe, o que en Queenstown (Irlanda del Sud), el 93% de 
-## passatgers era de 3ra classe.
-prop.table(table(train$Pclass, train$Embarked),2)
-
 ##### DADES A MATRIU #####
+train.data$Embarked <- as.numeric(factor(train.data$Embarked))
+train.data$Sex <- as.numeric(factor(train.data$Sex))
+train.data$Title <- as.numeric(factor(train.data$Title))
+
 train.data <- scale(train.data)
 
 dataC = matrix(ncol=length(train.data[1,]),nrow=length(train.data[,1])) 
@@ -51,12 +41,12 @@ data$Target <- factor(data$Target)
 
 ##### VISUALITZAR DADES - LDA #####
 
-(lda.model <- lda (Target ~ ., data, prior = seq(1,1,length.out=K)/K))
+(lda.model <- lda (Target ~ ., data))
 plot(lda.model, col = as.numeric((data$Target)))
 
 #### TRAINING - LDA ####
 
-data.lda.cv <- lda(Target ~ ., data, prior = seq(1,1,length.out=K)/K, CV=TRUE) 
+data.lda.cv <- lda(Target ~ ., data, CV=TRUE) 
 summary(data.lda.cv$class)
 
 tab <- table(data$Target, data.lda.cv$class)  
@@ -64,7 +54,7 @@ tab <- table(data$Target, data.lda.cv$class)
 
 #### TESTING - LDA  ####
 
-data.lda <- lda(Target ~ ., data, prior = seq(1,1,length.out=K)/K)
+data.lda <- lda(Target ~ ., data)
 
 pred <- predict(data.lda, data)$class
 t_true <- data[,1]
@@ -74,3 +64,4 @@ table(pred,t_true)
 #### PREDICTION ERROR - LDA ####
 
 (sum(pred != t_true)/length(t_true))*100
+

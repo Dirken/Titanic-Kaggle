@@ -2,62 +2,60 @@
 ## Linear Quadratics Methods
 ###############################################
 
-setwd("/home/dirken/Downloads/APA/titanic2/titanic/csvs/")
+#setwd("/home/dirken/Downloads/APA/titanic2/titanic/csvs/")
+setwd("D:/Usuarios/alex2132/Escritorio/Titanic-Kaggle-master/Titanic-Kaggle-master/csvs")
 
-test <- read.csv("parsed/test_clean.csv", stringsAsFactors = FALSE)
-train <- read.csv("parsed/train_clean.csv", stringsAsFactors = FALSE)
+test <- read.csv("parsed/test_clean.csv", stringsAsFactors = TRUE)
+trainning <- read.csv("parsed/train_clean.csv", stringsAsFactors = TRUE)
+
+
+###############################################
+## QDA
+###############################################
+library(MASS)
+# train QDA MODEL
+
+qda_model <- train(as.factor(Survived) ~ Pclass + Sex + AgeGroup + Fare + Embarked + FamilySize ,
+                   data=trainning, method="qda")
+
+test$Survived_pred <- predict(qda_model, test)
+(tab <- table(test$Survived_pred, test$Survived))
+1 - sum(tab[row(tab)==col(tab)])/sum(tab)
+
+confusionMatrix(test$Survived, predict(qda_model, test))
 
 
 ###############################################
 ## Naive Bayes
 ###############################################
+library(e1071)
 
-###############################################
-## Nearest Neightbours
-###############################################
-neighbours <- c(1:6)
-errors<- matrix (nrow=length(neighbours), ncol=2)
-colnames(errors) <- c("k","LOOCV error")
+naive_model <- naiveBayes(as.factor(Survived) ~ Pclass + Sex + AgeGroup + Fare + Embarked + FamilySize ,
+                    data=trainning)
 
-length(train)
-length(test)
-for (k in neighbours)
-{
-  myknn.cv <- knn.cv (train, test, k = factor(train[,6]))
-  #errors[k, "k"] <- neighbours[k]
-  #tab <- table(myknn.cv, test)
-  #errors[k, "LOOCV error"] <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab)
-}
+test$Survived_pred <- predict(naive_model, test)
+(tab <- table(test$Survived_pred, test$Survived))
+1 - sum(tab[row(tab)==col(tab)])/sum(tab)
 
-errors
+confusionMatrix(test$Survived, predict(naive_model, test))
+
 
 ###############################################
 ## Logistic regression
 ###############################################
 
-test <- read.csv("parsed/test_clean.csv", stringsAsFactors = TRUE)
-train <- read.csv("parsed/train_clean.csv", stringsAsFactors = TRUE)
-#de moment no tenim en compte el sexe
-train <- subset(train,select=c(1,2,6,7,8))
-test <-  subset(test,select=c(1,2,6,7,8))
-test$Sex <-  unfactor(train$Sex)
-# Model fitting
-model <- glm(Survived ~.,family=binomial(link='logit'),data=train)
-summary(model)
 
-# Analysis of deviance
-anova(model,test="Chisq")
+logit <- glm(as.factor(Survived) ~ Pclass + Sex + AgeGroup + Fare + Embarked + Title + FamilySize, data = trainning,
+             family = binomial(link = "logit"))
 
-# McFadden R^2
-library(pscl)
-pR2(model)
+summary(logit)
 
-#-------------------------------------------------------------------------------
-# MEASURING THE PREDICTIVE ABILITY OF THE MODEL
 
-# If prob > 0.5 then 1, else 0. Threshold can be set for better results
-fitted.results <- predict(model,newdata=test,type='response')
-fitted.results <- ifelse(fitted.results > 0.5,1,0)
+test$Survived_pred <- predict(logit, test, type = "response")
+test$Survived_pred[test$Survived_pred >= 0.5] <- 1
+test$Survived_pred[test$Survived_pred < 0.5] <- 0
 
-misClasificError <- mean(fitted.results != test$Survived)
-print(paste('Accuracy',1-misClasificError))
+(tab <- table(test$Survived_pred, test$Survived))
+1 - sum(tab[row(tab)==col(tab)])/sum(tab)
+
+
